@@ -32,12 +32,15 @@
             @forelse($posts as $post)
             <div class="col-md-4">
                 <div class="card card mb-5">
-                    <div class="card-header text-light bg-primary">
+                    
+                    @if($post->thumbnail)
+                        <img style="height: 300px; object-fit: cover; object-position: center;" class="card-img-top" src="{{ asset($post->takeImage())}}">
+                    @endif
 
-                        {{ $post->title }}
-
-                    </div>
                     <div class="card-body">
+                        <div class="card-title">
+                            {{ $post->title }}
+                        </div>        
                         <div>
                             {{ Str::limit($post->body, 100, '') }}
                         </div>
@@ -45,7 +48,7 @@
                     <a href="/posts/{{ $post->slug }}">Read more</a>
                     </div>
 
-                    <div class="card-footer d-flex justify-content-between">
+                    <div class="card-footer d-flex justify-content-between text-light bg-primary">
                         Published on {{ $post->created_at->diffForHumans()}}
                         @if(auth()->user()->is($post->author))
                         {{-- @can('update', $post) --}}

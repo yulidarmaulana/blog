@@ -39,14 +39,19 @@ class PostController extends Controller
 
     public function store(PostRequest $request)
     {	
-       
-        // $val = $this->validateRequest();
+        $request->validate([
+            'thumbnail' => 'image|mimes:jpg,png,jpeg,img,svg|max:2048'
+        ]);
 
         $val = request()->all();
 
-        // Assign title to  the slug
-        $val['slug'] = \Str::slug(request('title'));
+        $slug = \Str::slug(request('title'));
+        $val['slug'] = $slug;
+
+        $thumbnail = request()->file('thumbnail') ? request()->file('thumbnail')->store("images/posts") : null;
+
         $val['category_id'] = request('category');
+        $val['thumbnail'] = $thumbnail;
         
         // create new post
         $post = auth()->user()->posts()->create($val);  
@@ -72,9 +77,21 @@ class PostController extends Controller
 
     public function update(PostRequest $request, Post $post)
     {	
-        
+        $request->validate([
+            'thumbnail' => 'image|mimes:jpg,png,jpeg,img,svg|max:2048'
+        ]);
+
+        if (request()->file('thumbnail')) {
+            \Storage::delete($post->thumbnail);
+            $thumbnail = request()->file('thumbnail')->store("images/posts");
+        } else {
+            $thumbnail = $post->thumbnail;
+        }
+
         $val = request()->all();
         $val['category_id'] = request('category');
+        $val['thumbnail'] = $thumbnail;
+
         $post->update($val);
         $post->tags()->sync(request('tags'));
 
@@ -88,6 +105,8 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {	
+        \Storage::delete($post->thumbnail);
+
         if (auth()->user()->is($post->author)) {
             $post->tags()->detach();
             $post->delete();
