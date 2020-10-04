@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->hasMany(Post::class);
     }
 
+    public function gravatar($size = 150)
+    {	
+        return $grav_url = "https://www.gravatar.com/avatar/" . md5( strtolower( trim( $this->email ) ) ) . "?d=mp&s=" . $size;
+    }
+
     public function isAdmin()
     {	
         return $this->username == "yulidarmaulana";
